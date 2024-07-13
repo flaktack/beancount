@@ -15,6 +15,7 @@ from decimal import Decimal
 from beancount.core.number import ZERO
 from beancount.core.number import MISSING
 from beancount.core.amount import Amount
+from beancount.core.total_price import TotalPrice
 from beancount.core import display_context
 from beancount.core.position import CostSpec
 from beancount.core.data import Transaction
@@ -875,10 +876,7 @@ class Builder(lexer.LexBuilder):
             else:
                 price_number = price.number
                 if price_number is not MISSING:
-                    price_number = (
-                        ZERO if units.number == ZERO else price_number / abs(units.number)
-                    )
-                    price = Amount(price_number, price.currency)
+                    price = TotalPrice(price_number, price.currency, abs(units.number))
 
         # Note: Allow zero prices because we need them for round-trips for
         # conversion entries.

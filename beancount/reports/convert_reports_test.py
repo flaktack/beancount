@@ -217,6 +217,45 @@ class TestLedgerConversion(test_utils.TestCase):
         )
 
     @test_utils.docfile
+    def test_total_price(self, filename):
+        """
+        plugin "beancount.plugins.implicit_prices"
+
+        2014-01-01 open Assets:CA:Investment:HOOL
+        2014-01-01 open Expenses:Commissions
+        2014-01-01 open Assets:CA:Investment:Cash
+
+        2014-11-02 * "Buy some stock with foreign currency funds"
+          Assets:CA:Investment:HOOL          5 HOOL {520.0 USD}
+          Expenses:Commissions            9.95 USD
+          Assets:CA:Investment:Cash   -2939.46 CAD @@ 2609.95 USD
+        """
+        with test_utils.capture() as stdout:
+            result = test_utils.run_with_args(report.main, [filename, "ledger"])
+        self.assertEqual(0, result)
+        self.assertLines(
+            """
+
+          account Assets:CA:Investment:HOOL
+
+          account Expenses:Commissions
+
+          account Assets:CA:Investment:Cash
+
+          2014-11-02 * Buy some stock with foreign currency funds
+            Assets:CA:Investment:HOOL           5 HOOL {520.0 USD} @ 520.0 USD
+            Expenses:Commissions             9.95 USD
+            Assets:CA:Investment:Cash    -2939.46 CAD @@ 2609.95 USD
+
+          P 2014-11-02 00:00:00 HOOL    520.0 USD
+
+          P 2014-11-02 00:00:00 CAD    0.8879011791281391820266307417 USD
+
+        """,
+            stdout.getvalue(),
+        )
+
+    @test_utils.docfile
     def test_tags_links(self, filename):
         """
         2019-01-25 open Assets:A

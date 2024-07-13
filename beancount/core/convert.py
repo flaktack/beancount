@@ -22,6 +22,7 @@ Functions named ``convert_*()`` are used to convert postings and amounts to any 
 __copyright__ = "Copyright (C) 2013-2017  Martin Blais"
 __license__ = "GNU GPLv2"
 
+import math
 from decimal import Decimal
 
 from beancount.core.number import MISSING
@@ -29,6 +30,7 @@ from beancount.core.amount import Amount
 from beancount.core.position import Cost
 from beancount.core.position import Position
 from beancount.core import prices
+from beancount.core.total_price import TotalPrice
 
 
 def get_units(pos):
@@ -73,6 +75,7 @@ def get_weight(pos):
 
         Assets:Account  5234.50 USD                             ->  5234.50 USD
         Assets:Account  3877.41 EUR @ 1.35 USD                  ->  5234.50 USD
+        Assets:Account  3877.00 EUR @@ 5234.50 USD              ->  5234.50 USD
         Assets:Account       10 HOOL {523.45 USD}               ->  5234.50 USD
         Assets:Account       10 HOOL {523.45 USD} @ 545.60 CAD  ->  5234.50 USD
 
@@ -96,12 +99,15 @@ def get_weight(pos):
         if not isinstance(pos, Position):
             price = pos.price
             if price is not None:
-                # Note: Here we could assert that price.currency == units.currency.
-                if price.number is MISSING or units.number is MISSING:
-                    converted_number = MISSING
+                if isinstance(price, TotalPrice):
+                    weight = Amount(price.total.copy_sign(units.number), price.currency)
                 else:
-                    converted_number = price.number * units.number
-                weight = Amount(converted_number, price.currency)
+                    # Note: Here we could assert that price.currency == units.currency.
+                    if price.number is MISSING or units.number is MISSING:
+                        converted_number = MISSING
+                    else:
+                        converted_number = price.number * units.number
+                    weight = Amount(converted_number, price.currency)
 
     return weight
 

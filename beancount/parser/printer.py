@@ -11,6 +11,7 @@ import sys
 import textwrap
 from decimal import Decimal
 
+from beancount.core.total_price import TotalPrice
 from beancount.core import position
 from beancount.core import convert
 from beancount.core import inventory
@@ -258,7 +259,10 @@ class EntryPrinter:
             position_str = ""
 
         if posting.price is not None:
-            position_str += " @ {}".format(posting.price.to_string(self.dformat_max))
+            if isinstance(posting.price, TotalPrice):
+                position_str += " @@ {}".format(posting.price.to_total_string(self.dformat_max))
+            else:
+                position_str += " @ {}".format(posting.price.to_string(self.dformat_max))
 
         return flag_account, position_str, weight_str
 
@@ -415,7 +419,7 @@ def print_entry(entry, dcontext=None, render_weights=False, file=None):
 # TODO(blais): Change this to a function which accepts the same optional
 # arguments as the printer object. Isolate the spacer/segmentation algorithm to
 # its own function.
-def print_entries(entries, dcontext=None, render_weights=False, file=None, prefix=None):
+def print_entries(entries, dcontext=None, render_weights=False, file=None, prefix=None, min_width_account=None):
     """A convenience function that prints a list of entries to a file.
 
     Args:
@@ -434,7 +438,7 @@ def print_entries(entries, dcontext=None, render_weights=False, file=None, prefi
     if prefix:
         output.write(prefix)
     previous_type = type(entries[0]) if entries else None
-    eprinter = EntryPrinter(dcontext, render_weights)
+    eprinter = EntryPrinter(dcontext, render_weights, min_width_account=min_width_account)
     for entry in entries:
         # Insert a newline between transactions and between blocks of directives
         # of the same type.

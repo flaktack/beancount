@@ -15,6 +15,7 @@ from beancount.core.amount import Amount
 from beancount.core.number import D
 from beancount.core.position import Cost
 from beancount.core.position import CostSpec
+from beancount.core.total_price import TotalPrice
 from beancount.core.account import has_component
 from beancount.utils.bisect_key import bisect_left_with_key
 
@@ -190,7 +191,7 @@ Posting = NamedTuple(
         ("account", Account),
         ("units", Amount),
         ("cost", Optional[Union[Cost, CostSpec]]),
-        ("price", Optional[Amount]),
+        ("price", Optional[Union[Amount, TotalPrice]]),
         ("flag", Optional[Flag]),
         ("meta", Optional[Meta]),
     ],

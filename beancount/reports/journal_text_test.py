@@ -6,6 +6,7 @@ import unittest
 
 from beancount.core.number import D
 from beancount.core.amount import A
+from beancount.core.total_price import TotalPrice
 from beancount.core import realization
 from beancount.core import position
 from beancount.core import data
@@ -55,6 +56,18 @@ class TestJournalRenderPosting(unittest.TestCase):
         )
         self.assertEqual(
             "  Assets:Something                 10 VHT @ 45.32 USD", str_posting
+        )
+
+    def test_render_posting_total_price(self):
+        pos = position.from_string("10 VHT")
+        str_posting = journal_text.render_posting(
+            data.Posting(
+                "Assets:Something", pos.units, pos.cost, TotalPrice(D("45.32"), "USD", D("10")), None, None
+            ),
+            self.number_format,
+        )
+        self.assertEqual(
+            "  Assets:Something                 10 VHT @@ 45.32 USD", str_posting
         )
 
     def test_render_posting_cost_price(self):

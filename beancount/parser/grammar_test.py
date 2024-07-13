@@ -19,6 +19,7 @@ from beancount.core.number import MISSING
 from beancount.core.amount import from_string as A
 from beancount.core.amount import Amount
 from beancount.core.position import CostSpec
+from beancount.core.total_price import TotalPrice
 from beancount.parser import grammar
 from beancount.parser import parser
 from beancount.parser import lexer
@@ -1332,6 +1333,8 @@ class TestTotalsAndSigns(unittest.TestCase):
         posting = entries[0].postings[0]
         self.assertEqual(amount.from_string("200 USD"), posting.price)
         self.assertEqual(None, posting.cost)
+        self.assertTrue(isinstance(posting.price, TotalPrice))
+        self.assertEqual(Decimal('2000'), posting.price.total)
 
     @parser.parse_doc()
     def test_total_price_negative(self, entries, errors, _):
@@ -1343,6 +1346,8 @@ class TestTotalsAndSigns(unittest.TestCase):
         posting = entries[0].postings[0]
         self.assertEqual(amount.from_string("200 USD"), posting.price)
         self.assertEqual(None, posting.cost)
+        self.assertTrue(isinstance(posting.price, TotalPrice))
+        self.assertEqual(Decimal('2000'), posting.price.total)
 
     @parser.parse_doc(expect_errors=True)
     def test_total_price_inverted(self, entries, errors, _):

@@ -8,6 +8,7 @@ import itertools
 import math
 import textwrap
 
+from beancount.core.total_price import TotalPrice
 from beancount.core.number import ZERO
 from beancount.core import data
 from beancount.core import realization
@@ -285,9 +286,14 @@ def render_posting(posting, number_format):
 
     price = posting.price
     if price:
-        strings.append(
-            "@ {}".format(number_format.format(price.number, price.currency).strip())
-        )
+        if isinstance(price, TotalPrice):
+            strings.append(
+                "@@ {}".format(number_format.format(price.total, price.currency).strip())
+            )
+        else:
+            strings.append(
+                "@ {}".format(number_format.format(price.number, price.currency).strip())
+            )
 
     return " ".join(strings)
 

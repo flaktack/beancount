@@ -11,6 +11,7 @@ import re
 import io
 
 from beancount.core.amount import Amount
+from beancount.core.total_price import TotalPrice
 from beancount.core import data
 from beancount.core import position
 from beancount.core import convert
@@ -202,7 +203,10 @@ class LedgerPrinter:
         )
 
         if posting.price is not None:
-            price_str = "@ {}".format(posting.price.to_string(self.dformat_max))
+            if isinstance(posting.price, TotalPrice):
+                price_str = "@@ {}".format(posting.price.to_total_string(self.dformat_max))
+            else:
+                price_str = "@ {}".format(posting.price.to_string(self.dformat_max))
         else:
             # Figure out if we need to insert a price on a posting held at cost.
             # See https://groups.google.com/d/msg/ledger-cli/35hA0Dvhom0/WX8gY_5kHy0J
@@ -348,11 +352,13 @@ class HLedgerPrinter(LedgerPrinter):
             # Convert the cost as a price entry, that's what HLedger appears to want.
             pos_str = pos_str.replace("{", "@ ").replace("}", "")
 
-        price_str = (
-            "@ {}".format(posting.price.to_string(self.dformat_max))
-            if posting.price is not None
-            else ""
-        )
+        if posting.price is not None:
+            if isinstance(posting.price, TotalPrice):
+                price_str = "@@ {}".format(posting.price.to_total_string(self.dformat_max))
+            else:
+                price_str = "@ {}".format(posting.price.to_string(self.dformat_max))
+        else:
+            price_str = ""
 
         posting_str = "  {:64} {:>16} {:>16}".format(
             flag_posting, quote_currency(pos_str), quote_currency(price_str)

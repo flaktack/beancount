@@ -9,7 +9,7 @@ import unittest
 from beancount.core.number import MISSING
 from beancount.core.number import D
 from beancount.core.amount import A
-from beancount.core.data import create_simple_posting as P
+from beancount.core.data import create_simple_posting as P, Posting
 from beancount.core.data import create_simple_posting_with_cost as PCost
 from beancount.core.position import Cost
 from beancount.core.position import Position
@@ -18,6 +18,7 @@ from beancount.core import inventory
 from beancount.core import prices
 from beancount.core import data
 from beancount import loader
+from beancount.core.total_price import TotalPrice
 
 
 def build_price_map_util(date_currency_price_tuples):
@@ -97,6 +98,14 @@ class TestPositionConversions(unittest.TestCase):
             A("100 HOOL"),
             convert.get_weight(self._pos(A("100 HOOL"), Cost(MISSING, "USD", None, None))),
         )
+
+    def test_weight__with_price(self):
+        self.assertEqual(A("-514000.00 USD"), convert.get_weight(
+            Posting("Assets:Bank:Checking", A("-100 HOOL"), None, A("5140 USD"), None, None)))
+
+    def test_weight__with_total_price(self):
+        self.assertEqual(A("-51400 USD"), convert.get_weight(
+            Posting("Assets:Bank:Checking", A("-100 HOOL"), None, TotalPrice(D("51400.00"), "USD", D("-100")), None, None)))
 
     def test_old_test(self):
         # Entry without cost, without price.
