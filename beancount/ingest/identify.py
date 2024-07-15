@@ -23,7 +23,7 @@ SECTION = "**** {}"
 
 # A file size beyond which we will simply ignore the file. This is used to skip
 # large files that are commonly co-present in a Downloads directory.
-FILE_TOO_LARGE_THRESHOLD = 8 * 1024 * 1024
+FILE_TOO_LARGE_THRESHOLD = 32 * 1024 * 1024
 
 
 def find_imports(importer_config, files_or_directories, logfile=None):
